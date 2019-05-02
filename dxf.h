@@ -42,6 +42,7 @@ int  dxf_entities_end(dxf_ctx_t *ctx);
 void dxf_set_layer(dxf_ctx_t *ctx, const char *layer);
 int  dxf_comment(dxf_ctx_t *ctx, const char *comment);
 int  dxf_line(dxf_ctx_t *ctx, dxf_real x0, dxf_real y0, dxf_real x1, dxf_real y1);
+int  dxf_polyline(dxf_ctx_t *ctx, const dxf_real *p, int n);
 int  dxf_polygon(dxf_ctx_t *ctx, const dxf_real *p, int n);
 int  dxf_text(dxf_ctx_t *ctx, dxf_real x, dxf_real y, int height, const char *text);
 
@@ -272,12 +273,13 @@ int dxf_line(dxf_ctx_t *ctx, dxf_real x0, dxf_real y0, dxf_real x1, dxf_real y1)
 	return 0;
 }
 
-int dxf_polygon(dxf_ctx_t *ctx, const dxf_real *p, int n)
+static
+int dxf__polygon(dxf_ctx_t *ctx, const dxf_real *p, int n, int closed)
 {
 	DXF_ASSERT(n >= 2);
 	DXF__CHECK(dxf__entity_begin(ctx, "POLYLINE"));
 	DXF__CHECK(dxf__int(ctx, 66, 1)); /* unused but required */
-	DXF__CHECK(dxf__int(ctx, 70, 1)); /* 1 for closed */
+	DXF__CHECK(dxf__int(ctx, 70, closed)); /* 1 for closed */
 	for (const dxf_real *pi = p, *pn = p + 2 * n; pi != pn; pi += 2) {
 		DXF__CHECK(dxf__entity_begin(ctx, "VERTEX"));
 		DXF__CHECK(dxf__real(ctx, 10, pi[0]));
@@ -285,6 +287,16 @@ int dxf_polygon(dxf_ctx_t *ctx, const dxf_real *p, int n)
 	}
 	DXF__CHECK(dxf__entity(ctx, "SEQEND"));
 	return 0;
+}
+
+int dxf_polyline(dxf_ctx_t *ctx, const dxf_real *p, int n)
+{
+	return dxf__polygon(ctx, p, n, 0);
+}
+
+int dxf_polygon(dxf_ctx_t *ctx, const dxf_real *p, int n)
+{
+	return dxf__polygon(ctx, p, n, 1);
 }
 
 int dxf_text(dxf_ctx_t *ctx, dxf_real x, dxf_real y, int height, const char *text)

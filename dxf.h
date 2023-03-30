@@ -233,7 +233,7 @@ int dxf_line_type(dxf_ctx_t *ctx, const char *name, const dxf_real pattern[], u3
 
 	len = 0.f;
 	for (u32 i = 0; i < n; ++i)
-		len += fabsf(pattern[i]);
+		len += fabs(pattern[i]);
 	DXF__CHECK(dxf__real(ctx, 40, len));
 	for (u32 i = 0; i < n; ++i)
 		DXF__CHECK(dxf__real(ctx, 49, pattern[i]));
